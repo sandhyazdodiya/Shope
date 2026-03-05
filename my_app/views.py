@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views import View
-from my_app.models import Item
-import json
+from my_app.models import Item, AuthToken
+import json, secrets
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
@@ -75,7 +75,7 @@ def session_logout_api(request):
 # Session Authentication 
 
 # Get Authentication 
-
+# X-CSRFToken - <csrftoken>
 # curl --location --request GET 'http://localhost:8000/my_app/csrf_token' \
 # --header 'Referrer-Policy: same-origin' \
 # --header 'Cross-Origin-Opener-Policy: same-origin' \
@@ -115,4 +115,36 @@ def session_logout_api(request):
 #         "description": "Lightweight sleeveless vest for intense workout sessions.",
 #         "image": null
 #     }'
+
+def token_login_api(request):
+
+    if request.method == "POST":
+        data = json.loads(request.body)
+        username = data.get("username")
+        password = data.get("password")
+
+        user = authenticate(request, username=username, password=password)
+
+        user = authenticate(username=username, password=password)
+
+        if not user:
+            return JsonResponse({"error": "Invalid credentials"}, status=401)
+
+        token = secrets.token_hex(32)
+
+        AuthToken.objects.create(user=user, token=token)
+
+        return JsonResponse({"token": token})
+
+def token_logout_api(request):
+    # auth_header = request.headers.get("Authorization")
+    # token = auth_header.split(" ")[1]
+
+    # AuthToken.objects.filter(token=token).delete()
+
+    # return JsonResponse({"message": "Logged out successfully"})
+
+    logout(request)  # deletes session
+    return JsonResponse({"message": "Logged out successfully"})
+
 
