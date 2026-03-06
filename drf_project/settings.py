@@ -56,11 +56,13 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     # "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
-    'my_app.middlewares.TokenAuthMiddleware',
+    # 'my_app.middlewares.TokenAuthMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'my_app.middlewares.JWTAuthenticationMiddleware',
+
 ]
 
 ROOT_URLCONF = 'drf_project.urls'

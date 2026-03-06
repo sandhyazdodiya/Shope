@@ -2,13 +2,14 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views import View
 from my_app.models import Item, AuthToken
-import json, secrets
+import json, secrets, jwt, datetime
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from django.core import serializers
 from django.middleware.csrf import get_token
 from django.contrib.auth import authenticate, login, logout
+from django.conf import settings
 
 
 # # Create your views here.
@@ -142,9 +143,58 @@ def token_logout_api(request):
 
     # AuthToken.objects.filter(token=token).delete()
 
-    # return JsonResponse({"message": "Logged out successfully"})
+    # return JsonResponse({"message": "Logged out successfully"}) 
 
     logout(request)  # deletes session
+    return JsonResponse({"message": "Logged out successfully"})
+
+
+def jwt_login_api(request):
+
+    if request.method == "POST":
+
+        data = json.loads(request.body)
+
+        username = data.get("username")
+        password = data.get("password")
+
+        user = authenticate(username=username, password=password)
+
+        if user is None:
+            return JsonResponse({"error": "Invalid credentials"}, status=401)
+
+        payload = {
+            "user_id": user.id,
+            "username": user.username,
+            "exp": datetime.datetime.now() + datetime.timedelta(hours=2),
+            "iat": datetime.datetime.now()
+        }
+
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+        return JsonResponse({ "message": "Login successful", "token": token })
+
+
+
+# JWT Authentication
+# curl --location 'http://localhost:8000/my_app/items/' \
+# --header 'X-CSRFToken: 9G9sFlQYqxC9gYJjUBozOvDInllHtqpR' \
+# --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6InVkYXkiLCJleHAiOjE3NzI3MjcwMjcsImlhdCI6MTc3MjcxOTgyN30.uPGjw40aNqUw7JX0JftlT3qk4DM_DFpAX6ye_GfoaiA' \
+# --header 'Content-Type: application/json' \
+# --header 'Cookie: csrftoken=9G9sFlQYqxC9gYJjUBozOvDInllHtqpR' \
+# --data '    {
+#         "title": "Sleeveless Sports Vest",
+#         "price": 999.0,
+#         "discount_price": 799.0,
+#         "category": "SW",
+#         "label": "S",
+#         "slug": "sleeveless-sports-vest",
+#         "description": "Lightweight sleeveless vest for intense workout sessions.",
+#         "image": null
+#     }'
+
+def jwt_logout_api(request):
+    logout(request)
     return JsonResponse({"message": "Logged out successfully"})
 
 

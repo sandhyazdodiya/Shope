@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import Items, ItemsUsingSerializer, csrf_token_api, session_login_api, session_logout_api,token_login_api, token_logout_api
+from .views import Items, ItemsUsingSerializer, csrf_token_api, session_login_api, session_logout_api,token_login_api, token_logout_api, jwt_login_api, jwt_logout_api
 # from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -11,9 +11,7 @@ urlpatterns = [
     path('session_login_api', session_login_api, name='session_login_api'), # need to use csrf
     path('session_logout_api', session_logout_api, name='session_logout_api'), # need to use csrf
     path('token_login_api', token_login_api, name='token_login_api'),
-    path('token_logout_api', token_logout_api, name='token_logout_api')
-
-
-    # path('login_jwt_token/', TokenObtainPairView.as_view()),
-    # path('login_jwt_token/refresh/', TokenRefreshView.as_view()),
+    path('token_logout_api', token_logout_api, name='token_logout_api'),
+    path('jwt_login_api', jwt_login_api, name='jwt_login_api'),
+    path('jwt_logout_api', jwt_logout_api, name='jwt_logout_api')
 ]
