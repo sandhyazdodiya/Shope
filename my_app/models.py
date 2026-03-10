@@ -191,3 +191,17 @@ def userprofile_receiver(sender, instance, created, *args, **kwargs):
 
 
 post_save.connect(userprofile_receiver, sender=settings.AUTH_USER_MODEL)
+
+
+class Department(models.Model):
+    name = models.CharField(max_length=100)
+
+
+class Employee(models.Model):
+    name = models.CharField(max_length=100)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+
+
+class Project(models.Model):
+    name = models.CharField(max_length=100)
+    employees = models.ManyToManyField(Employee)

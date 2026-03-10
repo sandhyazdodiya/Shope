@@ -10,6 +10,9 @@ from django.core import serializers
 from django.middleware.csrf import get_token
 from django.contrib.auth import authenticate, login, logout
 from django.conf import settings
+from .models import Project, Employee
+from django.db import connection
+
 
 
 # # Create your views here.
@@ -196,5 +199,58 @@ def jwt_login_api(request):
 def jwt_logout_api(request):
     logout(request)
     return JsonResponse({"message": "Logged out successfully"})
+
+
+class Employees(View):
+    # def get(self, *args, **kwargs):
+        # get department name for each employee
+        # employees = Employee.objects.all()
+        # print("all employees", employees)
+        # emp_dep = []
+        # for emp in employees:
+        #     print("emp", emp.name)
+        #     print("department", emp.department.name)
+        #     emp_dep.append([emp.name, emp.department.name])
+        # print(connection.queries)
+        # return JsonResponse({"data": list(connection.queries)}, status=200)
+
+        # def get(self, *args, **kwargs):
+        #     # get department name for each employee using select_related
+        #     employees = Employee.objects.select_related('department')
+        #     print("all employees", employees)
+        #     emp_dep = []
+        #     for emp in employees:
+        #         print("emp", emp.name)
+        #         print("department", emp.department.name)
+        #         emp_dep.append([emp.name, emp.department.name])
+        #     print(connection.queries)
+        #     return JsonResponse({"data": list(connection.queries)}, status=200)
+
+        def get(self, *args, **kwargs):
+            # Prefetches all employees working on those projects
+            projects = Project.objects.prefetch_related('employees')
+            print("all projects", projects)
+            proj_emp = []
+            for project in projects:
+                emps = []
+                for emp in project.employees.all():
+                    emps.append(emp.name)
+                proj_emp.append([project.name, emps])
+            print(connection.queries)
+            return JsonResponse({"data": list(connection.queries)}, status=200)
+
+
+        # def get(self, *args, **kwargs):
+        #     # Prefetches all employees working on those projects
+        #     projects = Project.objects.all()
+        #     print("all projects", projects)
+        #     proj_emp = []
+        #     for project in projects:
+        #         emps = []
+        #         for emp in project.employees.all():
+        #             emps.append(emp.name)
+        #         proj_emp.append([project.name, emps])
+        #     print(connection.queries)
+        #     return JsonResponse({"data": list(connection.queries)}, status=200)
 
 
