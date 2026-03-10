@@ -12,6 +12,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.conf import settings
 from .models import Project, Employee
 from django.db import connection
+from django.core.paginator import Paginator
 
 
 
@@ -21,21 +22,39 @@ class Items(View):
     def get(self, request, *args, **kwargs):
         # items = Item.objects.all().values()
         # return JsonResponse(list(items), content_type="application/json", safe=False)
-        page = int(request.GET.get("page", 1))
-        page_size = int(request.GET.get("size", 10))
 
-        start_index = (page -1) * page_size 
-        end_index = start_index + page_size
-        items = Item.objects.all().values()[start_index:end_index]
+        # page = int(request.GET.get("page", 1))
+        # page_size = int(request.GET.get("size", 10))
+
+        # start_index = (page -1) * page_size 
+        # end_index = start_index + page_size
+        # items = Item.objects.all().values()[start_index:end_index]
+        # return JsonResponse(
+        #     {
+        #         "page" : page,
+        #         "page_size" : page_size,
+        #         "total" : Item.objects.count(),
+        #         "items" : list(items)
+        #     },
+        #     content_type = "application/json", safe=False
+        # )
+
+        page = int(request.GET.get('page', 1))
+        page_size = int(request.GET.get('page_size', 10))
+        all_items = Item.objects.all().values()
+        paginator = Paginator(all_items, page_size)
+        items_page = paginator.get_page(page)
         return JsonResponse(
             {
                 "page" : page,
                 "page_size" : page_size,
-                "total" : Item.objects.count(),
-                "items" : list(items)
+                "total_pages" : paginator.num_pages,
+                "total_item" : paginator.count,
+                "items" : list(items_page),
+
             },
-            content_type = "application/json", safe=False
-        )
+        content_type="application/json", safe=False)
+
 
     def post(self, request, *args, **kwargs):
         item = json.loads(request.body)
