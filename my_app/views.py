@@ -19,8 +19,23 @@ from django.db import connection
 
 class Items(View):
     def get(self, request, *args, **kwargs):
-        items = Item.objects.all().values()
-        return JsonResponse(list(items), content_type="application/json", safe=False)
+        # items = Item.objects.all().values()
+        # return JsonResponse(list(items), content_type="application/json", safe=False)
+        page = int(request.GET.get("page", 1))
+        page_size = int(request.GET.get("size", 10))
+
+        start_index = (page -1) * page_size 
+        end_index = start_index + page_size
+        items = Item.objects.all().values()[start_index:end_index]
+        return JsonResponse(
+            {
+                "page" : page,
+                "page_size" : page_size,
+                "total" : Item.objects.count(),
+                "items" : list(items)
+            },
+            content_type = "application/json", safe=False
+        )
 
     def post(self, request, *args, **kwargs):
         item = json.loads(request.body)
@@ -37,6 +52,18 @@ class Items(View):
         item = Item.objects.filter(id=Item_id).delete()
         return JsonResponse({"status": "Deleted Successfully"}, status=200)
 
+
+# curl --location --request GET 'http://localhost:8000/my_app/items/?page=2&size=10' \
+# --header 'X-CSRFToken: z1zUXKqmNBgVevR5QzGvWgBEUwvK4vy2yxycsV6a3YIUkjqeA0UUAB4c7HGhnLNJ' \
+# --header 'sessionid: wiu5y8uy7vxsm6t7ujuf5skl2w2qrok5' \
+# --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6InVkYXkiLCJleHAiOjE3NzMxNDY0ODYsImlhdCI6MTc3MzEzOTI4Nn0.Mnfv2-afOE8vUM-ItHLFMLg3jW9wU0bPbvPcA-oMzrI' \
+# --header 'Content-Type: application/json' \
+# --header 'Cookie: csrftoken=9G9sFlQYqxC9gYJjUBozOvDInllHtqpR' \
+# --data-raw '{
+#     "username" : "uday",
+#     "password" : "Sandhya@0506"
+
+# }'
 
 class ItemsUsingSerializer(View):
 
